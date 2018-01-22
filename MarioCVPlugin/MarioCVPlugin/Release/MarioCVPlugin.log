@@ -1,0 +1,12 @@
+﻿  Source.cpp
+Source.cpp(11): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+Source.cpp(17): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+     Creating library C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\Release\MarioCVPlugin.lib and object C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\Release\MarioCVPlugin.exp
+  Generating code
+  1 of 723 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  MarioCVPlugin.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\Release\MarioCVPlugin.dll
+  MarioCVPlugin.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\Release\MarioCVPlugin.pdb (Full PDB)
+          1 file(s) copied.

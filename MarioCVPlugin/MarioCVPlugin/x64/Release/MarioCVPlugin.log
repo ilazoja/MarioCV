@@ -1,0 +1,10 @@
+﻿  Source.cpp
+     Creating library C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\x64\Release\MarioCVPlugin.lib and object C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\x64\Release\MarioCVPlugin.exp
+  Generating code
+  17 of 711 functions ( 2.4%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    40 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  MarioCVPlugin.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\x64\Release\MarioCVPlugin.dll
+  MarioCVPlugin.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCVPlugin\x64\Release\MarioCVPlugin.pdb (Full PDB)
+          1 file(s) copied.

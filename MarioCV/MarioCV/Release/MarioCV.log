@@ -1,0 +1,41 @@
+﻿  Source.cpp
+Source.cpp(19): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+Source.cpp(26): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+  lapi.c
+  lauxlib.c
+  lbaselib.c
+  lcode.c
+  ldblib.c
+  ldebug.c
+  ldo.c
+  ldump.c
+  lfunc.c
+  lgc.c
+  linit.c
+  liolib.c
+  llex.c
+  lmathlib.c
+  lmem.c
+  loadlib.c
+  lobject.c
+  lopcodes.c
+  loslib.c
+  lparser.c
+  Compiling...
+  lstate.c
+  lstring.c
+  lstrlib.c
+  ltable.c
+  ltablib.c
+  ltm.c
+  lua.c
+  lundump.c
+  lvm.c
+  lzio.c
+  print.c
+     Creating library C:\Ilir\Games\Snes Debug\MarioCVPlugin2017\MarioCV\Release\MarioCV.lib and object C:\Ilir\Games\Snes Debug\MarioCVPlugin2017\MarioCV\Release\MarioCV.exp
+  Generating code
+  All 723 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  MarioCV.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin2017\MarioCV\Release\MarioCV.dll
+          1 file(s) copied.

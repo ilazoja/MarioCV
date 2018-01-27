@@ -5,13 +5,15 @@
 --end
 --libint()
 --msgbox("Hew, it worked!", "Lua Message Box")
-require("MarioCVPlugin")
+
+require("MarioCV")
+
 print(square(1.414213598))
 print(cube(5))
 
 while true do
    -- Code executed once per frame
- 
+   readScreen(1)
    joypad.set(1, {right=1, B=1}) -- when he lands on ground, have to let go of jump
 
    snes9x.frameadvance()

@@ -7,12 +7,69 @@
 
 
 #include <windows.h>
+#include <iostream>
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
 
 extern "C" // must wrap it around extern "C" as it is c code, also must get rid of lua.c since it has main function
 {
-#include "src/lua.h"                               /* Always include this */
-#include "src/lauxlib.h"                           /* Always include this */
-#include "src/lualib.h"                            /* Always include this */
+	#include "src/lua.h"                               /* Always include this */
+	#include "src/lauxlib.h"                           /* Always include this */
+	#include "src/lualib.h"                            /* Always include this */
+}
+
+using namespace std;
+using namespace cv;
+
+Mat hwnd2mat(HWND hwnd)
+{
+	HDC hwindowDC, hwindowCompatibleDC;
+
+	int height, width, srcheight, srcwidth;
+	HBITMAP hbwindow;
+	Mat src;
+	BITMAPINFOHEADER  bi;
+
+	hwindowDC = GetDC(hwnd);
+	hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
+	SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
+
+	RECT windowsize;    // get the height and width of the screen
+	GetClientRect(hwnd, &windowsize);
+
+	srcheight = windowsize.bottom;
+	srcwidth = windowsize.right;
+	height = windowsize.bottom / 1;  //change this to whatever size you want to resize to
+	width = windowsize.right / 1;
+
+	src.create(height, width, CV_8UC4);
+
+	// create a bitmap
+	hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
+	bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
+	bi.biWidth = width;
+	bi.biHeight = -height;  //this is the line that makes it draw upside down or not
+	bi.biPlanes = 1;
+	bi.biBitCount = 32;
+	bi.biCompression = BI_RGB;
+	bi.biSizeImage = 0;
+	bi.biXPelsPerMeter = 0;
+	bi.biYPelsPerMeter = 0;
+	bi.biClrUsed = 0;
+	bi.biClrImportant = 0;
+
+	// use the previously created device context with the bitmap
+	SelectObject(hwindowCompatibleDC, hbwindow);
+	// copy from the window device context to the bitmap device context
+	StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, 0, 0, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+	GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
+
+	// avoid memory leak
+	DeleteObject(hbwindow);
+	DeleteDC(hwindowCompatibleDC);
+	ReleaseDC(hwnd, hwindowDC);
+
+	return src;
 }
 
 static int isquare(lua_State *L) {              /* Internal name of func */
@@ -26,6 +83,19 @@ static int icube(lua_State *L) {                /* Internal name of func */
 	float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
 	printf("Top of cube(), number=%f\n", rtrn);
 	lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
+	return 1;                              /* One return value */
+}
+static int iReadScreen(lua_State *L) {
+	float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
+	printf("Top of cube(), number=%f\n", rtrn);
+	lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
+	HWND hwndDesktop = GetDesktopWindow();
+	namedWindow("output", WINDOW_NORMAL);
+	int key = 0;
+	Mat src = hwnd2mat(hwndDesktop);
+	// you can do some image processing here
+	imshow("output", src);
+
 	return 1;                              /* One return value */
 }
 
@@ -46,13 +116,14 @@ static int icube(lua_State *L) {                /* Internal name of func */
 
 // extern "C" needed to make sure function does not get mangled, 
 // __declspec(dllexport) needed to expose function
-extern "C" int __declspec(dllexport) luaopen_MarioCVPlugin(lua_State *L) {
+extern "C" int __declspec(dllexport) luaopen_MarioCV(lua_State *L) { // IMPORTANT THEY ARE NAMED THE SAME
 	lua_register(
 		L,               /* Lua state variable */
 		"square",        /* func name as known in Lua */
 		isquare          /* func name in this file */
 	);
 	lua_register(L, "cube", icube);
+	lua_register(L, "readScreen", iReadScreen);
 	return 0;
 }
 /*

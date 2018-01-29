@@ -1,5 +1,4 @@
-// Use Visual Studio 2017
-// Next steps: implement OpenCV
+// Next steps: implement detection after awhile to recalibrate
 
 // Will binding like LuaBridge be needed? Maybe not since almost everything will be handled in C++, just need Lua for emulator
 
@@ -10,17 +9,30 @@
 #include <iostream>
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/tracking.hpp"
+#include "opencv2/core/ocl.hpp"
+#include "src/kcf/kcftracker.hpp"
 
-extern "C" // must wrap it around extern "C" as it is c code, also must get rid of lua.c since it has main function
+extern "C" // must wrap it around extern "C" as it is c code, also must get rid of luac.c since it has main function
 {
-	#include "src/lua.h"                               /* Always include this */
-	#include "src/lauxlib.h"                           /* Always include this */
-	#include "src/lualib.h"                            /* Always include this */
+	#include "src/lua/lua.h"                               /* Always include this */
+	#include "src/lua/lauxlib.h"                           /* Always include this */
+	#include "src/lua/lualib.h"                            /* Always include this */
 }
 
 using namespace std;
 using namespace cv;
 
+// Convert to string
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+( std::ostringstream() << std::dec << x ) ).str()
+
+HWND hwndDesktop;
+Ptr<cv::Tracker> tracker;
+KCFTracker trackerKCF(true, true, true, true);
+Rect2d roi;
+
+// Setup desktop capture
 Mat hwnd2mat(HWND hwnd)
 {
 	HDC hwindowDC, hwindowCompatibleDC;
@@ -69,7 +81,81 @@ Mat hwnd2mat(HWND hwnd)
 	DeleteDC(hwindowCompatibleDC);
 	ReleaseDC(hwnd, hwindowDC);
 
-	return src;
+	Mat frame; 
+	// reduce from 4 channel to 3 channel
+	cvtColor(src, frame, CV_BGRA2BGR);
+
+	return frame;
+}
+
+static int initTracker() {
+	hwndDesktop = GetDesktopWindow();
+	namedWindow("output", WINDOW_NORMAL);
+	namedWindow("KCF", WINDOW_NORMAL);
+
+	// List of tracker types in OpenCV 3.2
+	// NOTE : GOTURN implementation is buggy and does not work.
+	string trackerTypes[6] = { "BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN" };
+
+	// Create a tracker
+	string trackerType = trackerTypes[2];
+
+	if (trackerType == "BOOSTING")
+		tracker = TrackerBoosting::create();
+	if (trackerType == "MIL")
+		tracker = TrackerMIL::create();
+	if (trackerType == "KCF")
+		//tracker = TrackerKCF::create();
+	if (trackerType == "TLD")
+		tracker = TrackerTLD::create();
+	if (trackerType == "MEDIANFLOW")
+		tracker = TrackerMedianFlow::create();
+	if (trackerType == "GOTURN")
+		tracker = TrackerGOTURN::create();
+
+	// get desktop capture
+	Mat frame = hwnd2mat(hwndDesktop);
+
+	// get bounding box
+	roi = selectROI("KCF", frame);
+
+	// initialize the tracker
+	if (trackerType == "KCF")
+		trackerKCF.init(roi, frame);
+	else
+		tracker->init(frame, roi);
+
+	return 1;
+}
+
+static int processScreen() {
+
+	//float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
+	//printf("Top of cube(), number=%f\n", rtrn);
+	//lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
+	int key = 0;
+
+	Mat frame = hwnd2mat(hwndDesktop);
+
+	// you can do some image processing here
+	imshow("output", frame);
+
+	// update the tracking result
+	if (tracker != 0)
+	{
+		tracker->update(frame, roi);
+	}
+	else
+	{
+		roi = trackerKCF.update(frame);
+	}
+	// draw the tracked object
+	rectangle(frame, roi, Scalar(255, 0, 0), 2, 1);
+
+	// show image with the tracked object
+	imshow("KCF", frame);
+
+	return 1;                              /* One return value */
 }
 
 static int isquare(lua_State *L) {              /* Internal name of func */
@@ -85,16 +171,15 @@ static int icube(lua_State *L) {                /* Internal name of func */
 	lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
 	return 1;                              /* One return value */
 }
+
 static int iReadScreen(lua_State *L) {
-	float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
-	printf("Top of cube(), number=%f\n", rtrn);
-	lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
-	HWND hwndDesktop = GetDesktopWindow();
-	namedWindow("output", WINDOW_NORMAL);
+	
+	//float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
+	//printf("Top of cube(), number=%f\n", rtrn);
+	//lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
 	int key = 0;
-	Mat src = hwnd2mat(hwndDesktop);
-	// you can do some image processing here
-	imshow("output", src);
+	
+	processScreen();
 
 	return 1;                              /* One return value */
 }
@@ -116,6 +201,24 @@ static int iReadScreen(lua_State *L) {
 
 // extern "C" needed to make sure function does not get mangled, 
 // __declspec(dllexport) needed to expose function
+#ifdef _DEBUG
+int main()
+{
+	initTracker();
+
+	while (true)
+	{
+		//quit on ESC button
+		if (waitKey(1) == 27)break;
+
+		processScreen();
+		
+	}
+
+	return 0;
+}
+
+#else
 extern "C" int __declspec(dllexport) luaopen_MarioCV(lua_State *L) { // IMPORTANT THEY ARE NAMED THE SAME
 	lua_register(
 		L,               /* Lua state variable */
@@ -124,8 +227,14 @@ extern "C" int __declspec(dllexport) luaopen_MarioCV(lua_State *L) { // IMPORTAN
 	);
 	lua_register(L, "cube", icube);
 	lua_register(L, "readScreen", iReadScreen);
+
+	initTracker();
+
 	return 0;
 }
+
+#endif
+
 /*
 // Old method that didn't work: http://lua-users.org/wiki/CreatingBinaryExtensionModules
 #include <windows.h>
@@ -152,3 +261,5 @@ extern "C" int __declspec(dllexport) libinit(lua_State* L)
 }*/
 
 // Extend to Mario Party?
+
+// Instead write to text used by lua to determine control?

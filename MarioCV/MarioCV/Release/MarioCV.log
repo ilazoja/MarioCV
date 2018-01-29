@@ -1,12 +1,11 @@
 ﻿  Source.cpp
-Source.cpp(76): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-Source.cpp(83): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-Source.cpp(89): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+Source.cpp(162): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+Source.cpp(169): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
      Creating library C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCV\Release\MarioCV.lib and object C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCV\Release\MarioCV.exp
   Generating code
-  29 of 742 functions ( 3.9%) were compiled, the rest were copied from previous compilation.
-    19 functions were new in current compilation
-    87 functions had inline decision re-evaluated but remain unchanged
+  1 of 1190 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   MarioCV.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCV\Release\MarioCV.dll
           1 file(s) copied.

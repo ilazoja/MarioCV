@@ -13,10 +13,13 @@ print(cube(5))
 
 while true do
    -- Code executed once per frame
-   readScreen(1)
-   joypad.set(1, {right=1, B=1}) -- when he lands on ground, have to let go of jump
-
    snes9x.frameadvance()
+   
+   readScreen(1)
+   --joypad.set(1, {right=1, B=1}) -- when he lands on ground, have to let go of jump
+   --joypad.set(1, {right=1})
+   
+   
 
 
 end

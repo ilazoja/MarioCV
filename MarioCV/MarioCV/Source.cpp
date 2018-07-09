@@ -12,6 +12,8 @@
 #include "opencv2/tracking.hpp"
 #include "opencv2/core/ocl.hpp"
 #include "src/kcf/kcftracker.hpp"
+#include "Player.hpp"
+#include "Helper.hpp";
 
 extern "C" // must wrap it around extern "C" as it is c code, also must get rid of luac.c since it has main function
 {
@@ -28,9 +30,10 @@ using namespace cv;
 ( std::ostringstream() << std::dec << x ) ).str()
 
 HWND hwndDesktop;
-Ptr<cv::Tracker> tracker;
-KCFTracker trackerKCF(true, true, true, true);
-Rect2d roi;
+
+int frameCount;
+int framesBeforeDetecting = 1000; // number of frames before detecting again
+Player* mario;
 
 // Setup desktop capture
 Mat hwnd2mat(HWND hwnd)
@@ -88,42 +91,26 @@ Mat hwnd2mat(HWND hwnd)
 	return frame;
 }
 
-static int initTracker() {
+static int initPlayer() {
 	hwndDesktop = GetDesktopWindow();
 	namedWindow("output", WINDOW_NORMAL);
 	namedWindow("KCF", WINDOW_NORMAL);
 
-	// List of tracker types in OpenCV 3.2
-	// NOTE : GOTURN implementation is buggy and does not work.
-	string trackerTypes[6] = { "BOOSTING", "MIL", "KCF", "TLD","MEDIANFLOW", "GOTURN" };
-
-	// Create a tracker
-	string trackerType = trackerTypes[2];
-
-	if (trackerType == "BOOSTING")
-		tracker = TrackerBoosting::create();
-	if (trackerType == "MIL")
-		tracker = TrackerMIL::create();
-	if (trackerType == "KCF")
-		//tracker = TrackerKCF::create();
-	if (trackerType == "TLD")
-		tracker = TrackerTLD::create();
-	if (trackerType == "MEDIANFLOW")
-		tracker = TrackerMedianFlow::create();
-	if (trackerType == "GOTURN")
-		tracker = TrackerGOTURN::create();
-
 	// get desktop capture
 	Mat frame = hwnd2mat(hwndDesktop);
 
-	// get bounding box
-	roi = selectROI("KCF", frame);
+	Rect2d roi;
+	Mat playerImage = imread(kImagePlayer, CV_LOAD_IMAGE_ANYCOLOR);
 
-	// initialize the tracker
-	if (trackerType == "KCF")
-		trackerKCF.init(roi, frame);
-	else
-		tracker->init(frame, roi);
+	if (!playerImage.data) {
+		// get bounding box
+		Rect2d roi = selectROI("KCF", frame);
+	}
+	else {
+		roi = mario->DetectPlayer(frame, playerImage);
+	}
+
+	mario = new Player("KCF", roi, frame);
 
 	return 1;
 }
@@ -140,20 +127,36 @@ static int processScreen() {
 	// you can do some image processing here
 	imshow("output", frame);
 
-	// update the tracking result
-	if (tracker != 0)
-	{
-		tracker->update(frame, roi);
+	Rect2d roi;
+	if (frameCount < framesBeforeDetecting) {
+		roi = mario->GetPlayerLocation(frame);
+		if (!roiIsValid(roi, frame)) {
+			roi = mario->DetectPlayer(frame, mario->initialPlayerImg);
+			frameCount = 0;
+			mario->initTracker(roi, frame);
+		}
+		else mario->playerImg = frame(roi);
+
 	}
 	else
 	{
-		roi = trackerKCF.update(frame);
+		roi = mario->DetectPlayer(frame,mario->initialPlayerImg);
+		frameCount = 0;
+		mario->initTracker(roi, frame);
 	}
+
+	if (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= frame.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= frame.rows) 
+
 	// draw the tracked object
+	//cout << roi.x << endl;
+	//cout << roi.y << endl;
 	rectangle(frame, roi, Scalar(255, 0, 0), 2, 1);
 
 	// show image with the tracked object
 	imshow("KCF", frame);
+
+	frameCount++;
+	//cout << frameCount << endl;
 
 	return 1;                              /* One return value */
 }
@@ -204,7 +207,7 @@ static int iReadScreen(lua_State *L) {
 #ifdef _DEBUG
 int main()
 {
-	initTracker();
+	initPlayer();
 
 	while (true)
 	{
@@ -228,7 +231,7 @@ extern "C" int __declspec(dllexport) luaopen_MarioCV(lua_State *L) { // IMPORTAN
 	lua_register(L, "cube", icube);
 	lua_register(L, "readScreen", iReadScreen);
 
-	initTracker();
+	initPlayer();
 
 	return 0;
 }

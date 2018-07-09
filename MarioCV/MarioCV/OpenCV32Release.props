@@ -9,7 +9,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OPENCV_DIR_32)\lib\Release</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core340.lib;opencv_highgui340.lib;opencv_objdetect340.lib;opencv_videoio340.lib;opencv_imgproc340.lib;opencv_tracking340.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core340.lib;opencv_highgui340.lib;opencv_objdetect340.lib;opencv_videoio340.lib;opencv_imgproc340.lib;opencv_tracking340.lib;opencv_imgcodecs340.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

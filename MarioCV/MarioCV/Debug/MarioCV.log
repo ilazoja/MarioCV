@@ -1,4 +1,2 @@
-﻿  Source.cpp
-c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(162): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(169): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+﻿  Helper.cpp
   MarioCV.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCV\Debug\MarioCV.exe

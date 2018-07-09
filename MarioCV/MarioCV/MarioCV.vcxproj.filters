@@ -117,6 +117,12 @@
     <ClCompile Include="src\lua\print.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lua\Makefile" />
@@ -204,6 +210,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\lua\lzio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

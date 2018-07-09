@@ -145,12 +145,12 @@ static int processScreen() {
 		mario->initTracker(roi, frame);
 	}
 
-	if (0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= frame.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= frame.rows) 
+	if (roiIsValid(roi, frame)) rectangle(frame, roi, Scalar(255, 0, 0), 2, 1);
+
 
 	// draw the tracked object
 	//cout << roi.x << endl;
 	//cout << roi.y << endl;
-	rectangle(frame, roi, Scalar(255, 0, 0), 2, 1);
 
 	// show image with the tracked object
 	imshow("KCF", frame);

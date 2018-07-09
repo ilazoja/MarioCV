@@ -37,7 +37,7 @@ Player::Player(String trackerType, Rect2d roi, Mat frame)
 		trackerOther->init(frame, roi);
 
 	initialPlayerImg = frame(roi);
-	//imwrite(kImagePlayer, initialPlayerImg);
+	imwrite(kImageRedKoopa, initialPlayerImg);
 }
 
 Player::~Player()

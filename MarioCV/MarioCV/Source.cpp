@@ -104,7 +104,7 @@ static int initPlayer() {
 
 	if (!playerImage.data) {
 		// get bounding box
-		Rect2d roi = selectROI("KCF", frame);
+		roi = selectROI("KCF", frame);
 	}
 	else {
 		roi = mario->DetectPlayer(frame, playerImage);

@@ -1,5 +1,7 @@
 ﻿  Source.cpp
 c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(16): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(165): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
-c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(172): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(97): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(177): warning C4018: '<': signed/unsigned mismatch
+c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(195): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
+c:\ilir\games\snes debug\mariocvplugin\mariocv\mariocv\source.cpp(202): warning C4244: 'initializing': conversion from 'lua_Number' to 'float', possible loss of data
   MarioCV.vcxproj -> C:\Ilir\Games\Snes Debug\MarioCVPlugin\MarioCV\Debug\MarioCV.exe

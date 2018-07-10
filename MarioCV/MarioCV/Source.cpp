@@ -34,6 +34,7 @@ HWND hwndDesktop;
 int frameCount;
 int framesBeforeDetecting = 1000; // number of frames before detecting again
 Player* mario;
+Helper* helper;
 
 // Setup desktop capture
 Mat hwnd2mat(HWND hwnd)
@@ -91,6 +92,29 @@ Mat hwnd2mat(HWND hwnd)
 	return frame;
 }
 
+static void detectEnemies(Mat frame, vector<Player*>& enemies) {
+
+	float pixelThreshold = 0.8;
+	Rect r(frame.cols - helper->redKoopaImage.cols - (frame.cols - frame.rows)/2, 0, helper->redKoopaImage.cols, frame.rows);
+	Mat rightEdge = frame(r);
+
+	Mat res;
+	Mat thresholdedImage;
+	matchTemplate(rightEdge, helper->redKoopaImage, res, TM_CCOEFF_NORMED);
+	threshold(res, thresholdedImage, pixelThreshold, 255, CV_THRESH_BINARY);
+	for (int r = 0; r < thresholdedImage.rows; ++r) {
+		for (int c = 0; c < thresholdedImage.cols; ++c) {
+			if (thresholdedImage.at<float>(r, c)) {// = thresholdedImage(r,c) == 0
+				//cout << thresholdedImage.at<float>(r, c) << endl;
+				Rect roi(frame.cols - helper->redKoopaImage.cols - (frame.cols - frame.rows) / 2, r, helper->redKoopaImage.cols, helper->redKoopaImage.rows);
+				Player* enemy = new Player("KCF", roi, frame);
+				enemies.push_back(enemy);
+			}
+		}
+	}
+
+}
+
 static int initPlayer() {
 	hwndDesktop = GetDesktopWindow();
 	namedWindow("output", WINDOW_NORMAL);
@@ -98,6 +122,8 @@ static int initPlayer() {
 
 	// get desktop capture
 	Mat frame = hwnd2mat(hwndDesktop);
+
+	helper = new Helper();
 
 	Rect2d roi;
 	Mat playerImage = imread(kImagePlayer, CV_LOAD_IMAGE_ANYCOLOR);
@@ -116,7 +142,7 @@ static int initPlayer() {
 }
 
 static int processScreen() {
-
+	static vector<Player*> enemies = {};
 	//float rtrn = lua_tonumber(L, -1);      /* Get the single number arg */
 	//printf("Top of cube(), number=%f\n", rtrn);
 	//lua_pushnumber(L, rtrn*rtrn*rtrn);      /* Push the return */
@@ -147,7 +173,11 @@ static int processScreen() {
 
 	if (roiIsValid(roi, frame)) rectangle(frame, roi, Scalar(255, 0, 0), 2, 1);
 
-
+	detectEnemies(frame, enemies);
+	for (int i = 0; i < enemies.size(); ++i) {
+		roi = enemies[i]->GetPlayerLocation(frame);
+		if (roiIsValid(roi, frame)) rectangle(frame, roi, Scalar(70, 25, 80), 2, 1);
+	}
 	// draw the tracked object
 	//cout << roi.x << endl;
 	//cout << roi.y << endl;

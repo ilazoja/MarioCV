@@ -4,6 +4,9 @@
 
 // New method: http://www.troubleshooters.com/codecorn/lua/lua_lua_calls_c.htm
 
+//to do
+//delete enemy if not found
+//detect if enemy already added
 
 #include <windows.h>
 #include <iostream>
@@ -94,21 +97,37 @@ Mat hwnd2mat(HWND hwnd)
 
 static void detectEnemies(Mat frame, vector<Player*>& enemies) {
 
-	float pixelThreshold = 0.8;
-	Rect r(frame.cols - helper->redKoopaImage.cols - (frame.cols - frame.rows)/2, 0, helper->redKoopaImage.cols, frame.rows);
+	float pixelThreshold = 0.7;
+	Rect r(frame.cols - helper->redKoopaImage.cols - (frame.cols - frame.rows)/2 - 10, 0, helper->redKoopaImage.cols + 10, frame.rows);
 	Mat rightEdge = frame(r);
 
 	Mat res;
 	Mat thresholdedImage;
 	matchTemplate(rightEdge, helper->redKoopaImage, res, TM_CCOEFF_NORMED);
+
+	imshow("template", res);
+
 	threshold(res, thresholdedImage, pixelThreshold, 255, CV_THRESH_BINARY);
 	for (int r = 0; r < thresholdedImage.rows; ++r) {
 		for (int c = 0; c < thresholdedImage.cols; ++c) {
 			if (thresholdedImage.at<float>(r, c)) {// = thresholdedImage(r,c) == 0
 				//cout << thresholdedImage.at<float>(r, c) << endl;
-				Rect roi(frame.cols - helper->redKoopaImage.cols - (frame.cols - frame.rows) / 2, r, helper->redKoopaImage.cols, helper->redKoopaImage.rows);
-				Player* enemy = new Player("KCF", roi, frame);
-				enemies.push_back(enemy);
+				bool uniqueEnemy = true;
+
+				// check to see if enemy is unique i.e. doesn't overlap with any other detected enemy
+				Rect roi(frame.cols - helper->redKoopaImage.cols - (frame.cols - frame.rows) / 2 + c, r, helper->redKoopaImage.cols, helper->redKoopaImage.rows);
+
+				for (int i = 0; i < enemies.size(); ++i) {
+					Rect roiOther = enemies[i]->GetPlayerLocation(frame);
+					if (roiIsValid(roi, frame) && ((roi & roiOther).area() > 0)) {
+						uniqueEnemy = false;
+					}
+				}
+
+				if (uniqueEnemy) {
+					Player* enemy = new Player("KCF", roi, frame);
+					enemies.push_back(enemy);
+				}
 			}
 		}
 	}
@@ -117,7 +136,7 @@ static void detectEnemies(Mat frame, vector<Player*>& enemies) {
 
 static int initPlayer() {
 	hwndDesktop = GetDesktopWindow();
-	namedWindow("output", WINDOW_NORMAL);
+	//namedWindow("output", WINDOW_NORMAL);
 	namedWindow("KCF", WINDOW_NORMAL);
 
 	// get desktop capture
@@ -151,7 +170,7 @@ static int processScreen() {
 	Mat frame = hwnd2mat(hwndDesktop);
 
 	// you can do some image processing here
-	imshow("output", frame);
+	//imshow("output", frame);
 
 	Rect2d roi;
 	if (frameCount < framesBeforeDetecting) {

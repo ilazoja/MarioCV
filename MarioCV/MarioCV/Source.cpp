@@ -5,8 +5,10 @@
 // New method: http://www.troubleshooters.com/codecorn/lua/lua_lua_calls_c.htm
 
 //to do
-//delete enemy if not found
-//detect if enemy already added
+//delete enemy if not found -> if on left edge of screen
+//make detection and tracking while running more consistent
+//make enemy detection based on optic flow?
+//detect ground
 
 #include <windows.h>
 #include <iostream>
@@ -16,7 +18,7 @@
 #include "opencv2/core/ocl.hpp"
 #include "src/kcf/kcftracker.hpp"
 #include "Player.hpp"
-#include "Helper.hpp";
+#include "Helper.hpp"
 
 extern "C" // must wrap it around extern "C" as it is c code, also must get rid of luac.c since it has main function
 {
@@ -193,10 +195,18 @@ static int processScreen() {
 	if (roiIsValid(roi, frame)) rectangle(frame, roi, Scalar(255, 0, 0), 2, 1);
 
 	detectEnemies(frame, enemies);
-	for (int i = 0; i < enemies.size(); ++i) {
-		roi = enemies[i]->GetPlayerLocation(frame);
-		if (roiIsValid(roi, frame)) rectangle(frame, roi, Scalar(70, 25, 80), 2, 1);
+
+	auto i = std::begin(enemies);
+
+	while (i != std::end(enemies)) {
+		roi = (*i)->GetPlayerLocation(frame);
+		if (roiIsValid(roi, frame) && roi.x > (frame.cols - frame.rows) / 2) {
+			rectangle(frame, roi, Scalar(70, 25, 80), 2, 1);
+			++i;
+		}
+		else i = enemies.erase(i);
 	}
+
 	// draw the tracked object
 	//cout << roi.x << endl;
 	//cout << roi.y << endl;
